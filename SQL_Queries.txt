@@ -1,0 +1,60 @@
+Q-1) Where are my customers located?
+
+
+SELECT c.country, SUM(od.unitprice*od.quantity) as Market_Share
+FROM orderdetails od
+JOIN orders o
+ON od.orderid=o.orderid
+JOIN customers c
+ON o.customerid=c.customerid
+GROUP BY 1 
+ORDER BY 2 DESC;
+
+Method Used-> Aggregation,Join, GROUP BY, ORDER BY.
+
+Q-2) What companies supply the majority of the products I sell?
+
+SELECT CompanyName,count(*) AS No_Of_Products
+FROM 
+	(SELECT s.CompanyName , p.ProductID , p.ProductName ,COUNT(*)
+	FROM Suppliers s
+	Join Products p
+	On s.supplierid=p.supplierid
+	GROUP BY 3
+	ORDER BY 1)SUB
+GROUP BY 1
+ORDER BY 2 desc
+limit 16;
+
+Method Used -> SubQuery,Join,Aggregation,GROUP BY, ORDER BY , LIMIT
+
+
+Q-3) Who are my highest performing employees?
+
+with temp_table AS (SELECT e.Employeeid, e.FirstName, e.LastName, sum(UnitPrice*Quantity) AS Total_sales
+					from Employees e 
+					join orders o
+					ON e.EmployeeID=o.EmployeeID
+					join OrderDetails od
+					ON od.OrderID=o.OrderID
+					GROUP BY 3
+					ORDER BY 4 desc)
+select FIrstName||' '||LastName AS Employee_Name,Total_sales from temp_table;
+
+Method Used -> Temporary Table,Concat,Aggregation,Group BY,Order By,Joins .
+
+
+Q-4) What products are growing in terms of sales?
+
+WITH TEMP_TABLE1 AS (SELECT od.orderid , p.productid , p.productname , od.unitprice*od.quantity*(1-od.discount) As Total_sales 
+					FROM Products p
+					join OrderDetails od 
+					ON p.productid=od.productid)
+SELECT t.productid AS Product_ID , t.productname AS Product_Name  , SUM(t.total_sales) AS Total_Sales, 
+substr(o.orderdate,1,4) As Year
+FROM temp_table1 t
+JOIN Orders o 
+ON t.orderid=o.orderid
+GROUP BY 2,4;
+
+Method Used-> Temporary Table, Aggregation ,Join , Substr , GROUP BY 
